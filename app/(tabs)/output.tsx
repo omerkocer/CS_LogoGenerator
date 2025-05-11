@@ -1,32 +1,30 @@
-import { StyleSheet } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView, StyleSheet } from 'react-native';
 
 import { LogoOutput } from '@/components/LogoOutput';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
 export default function OutputScreen() {
-  const { prompt } = useLocalSearchParams<{ prompt: string }>();
-
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Generated Logo</ThemedText>
-      </ThemedView>
-
-      <LogoOutput prompt={prompt} />
-    </ThemedView>
+    <LinearGradient
+      colors={['#100E19', '#241B39', '#100E19']}
+      style={styles.gradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1.1, y: 0 }}
+    >
+      <SafeAreaView style={styles.container}>
+        <LogoOutput />
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+    backgroundColor: '#100E19',
+  },
   container: {
     flex: 1,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: 20,
+    backgroundColor: 'transparent',
   },
 }); 

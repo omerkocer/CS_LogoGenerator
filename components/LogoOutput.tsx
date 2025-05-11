@@ -1,70 +1,139 @@
 import React from 'react';
-import { StyleSheet, Image } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
+export function LogoOutput() {
+  const { prompt, style } = useLocalSearchParams<{ prompt: string; style: string }>();
+  const router = useRouter();
 
-interface LogoOutputProps {
-  prompt: string;
-  imageUrl?: string;
-}
+  const handleClose = () => {
+    router.replace('/');
+  };
 
-export function LogoOutput({ prompt, imageUrl }: LogoOutputProps) {
+  const handleCopy = () => {
+    // TODO: Implement copy functionality
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="subtitle" style={styles.title}>Your Prompt</ThemedText>
-      <ThemedView style={styles.promptContainer}>
-        <ThemedText style={styles.promptText}>{prompt}</ThemedText>
-      </ThemedView>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Your Design</Text>
+        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <Image source={require('../assets/icons/close.png')} style={styles.closeIcon} />
+        </TouchableOpacity>
+      </View>
+      
+      <View style={styles.imageContainer}>
+        <Image 
+          source={require('../assets/images/generatedLogoExample.jpg')} 
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </View>
 
-      <ThemedText type="subtitle" style={styles.title}>Generated Result</ThemedText>
-      <ThemedView style={styles.outputContainer}>
-        {imageUrl ? (
-          <Image 
-            source={{ uri: imageUrl }} 
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        ) : (
-          <ThemedText style={styles.loadingText}>Logo generation in progress...</ThemedText>
-        )}
-      </ThemedView>
-    </ThemedView>
+      <View style={styles.promptContainer}>
+        <View style={styles.promptHeader}>
+          <Text style={styles.promptTitle}>Prompt</Text>
+          <TouchableOpacity onPress={handleCopy} style={styles.copyButton}>
+            <Image source={require('../assets/icons/copy.png')} style={styles.copyIcon} />
+            <Text style={styles.copyText}>Copy</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.promptText}>{prompt}</Text>
+        <View style={styles.styleTag}>
+          <Text style={styles.styleTagText}>{style}</Text>
+        </View>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    gap: 16,
+    flex: 1,
+    padding: 24,
+    gap: 24,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  closeIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
   promptContainer: {
-    padding: 16,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
+    padding: 16,
+  },
+  promptHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  promptTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  copyButton: {
+    padding: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+  },
+  copyIcon: {
+    width: 16,
+    height: 16,
+    resizeMode: 'contain',
+  },
+  copyText: {
+    fontSize: 14,
+    color: '#A1A1AA',
   },
   promptText: {
     fontSize: 16,
+    color: '#FFFFFF',
     lineHeight: 24,
+    marginBottom: 12,
   },
-  outputContainer: {
-    padding: 16,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    minHeight: 300,
-    alignItems: 'center',
-    justifyContent: 'center',
+  styleTag: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 50,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
   },
-  logoImage: {
-    width: '100%',
-    height: 300,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
+  styleTagText: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    textTransform: 'capitalize',
   },
 }); 

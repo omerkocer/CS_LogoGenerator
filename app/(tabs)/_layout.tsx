@@ -7,8 +7,12 @@ export default function Layout() {
       screenOptions={{
         headerShown: false,
       }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="output" />
+      <Stack.Screen 
+        name="index"
+      />
+      <Stack.Screen 
+        name="output"
+      />
     </Stack>
   );
 }

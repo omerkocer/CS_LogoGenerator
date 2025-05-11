@@ -1,53 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import Animated, { 
-  useAnimatedStyle, 
-  withRepeat, 
-  withTiming,
-  useSharedValue,
-  withSequence,
-  Easing
-} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFirebase } from '../hooks/useFirebase';
+import { Header } from './ui/Header';
+import { Status } from './ui/Status';
 
-type Status = 'idle' | 'processing' | 'done' | 'error';
 type LogoStyle = 'no-style' | 'monogram' | 'abstract' | 'mascot';
-
-const CircularLoader = () => {
-  const rotation = useSharedValue(0);
-
-  useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(360, {
-        duration: 2000,
-        easing: Easing.linear,
-      }),
-      -1
-    );
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotation.value}deg` }],
-    };
-  });
-
-  return (
-    <View style={styles.loaderContainer}>
-      <Animated.View style={[styles.loaderCircle, animatedStyle]}>
-        <View style={styles.loaderInner} />
-      </Animated.View>
-    </View>
-  );
-};
 
 export function LogoInput() {
   const router = useRouter();
   const [prompt, setPrompt] = React.useState('');
-  const [status, setStatus] = React.useState<Status>('idle');
+  const [status, setStatus] = React.useState<'idle' | 'processing' | 'done' | 'error'>('idle');
   const [timeLeft, setTimeLeft] = useState(5);
   const [selectedStyle, setSelectedStyle] = useState<LogoStyle>('no-style');
+  const { saveLogo, loading: firebaseLoading, error: firebaseError } = useFirebase();
   const MAX_LENGTH = 500;
 
   useEffect(() => {
@@ -62,18 +29,29 @@ export function LogoInput() {
     };
   }, [status, timeLeft]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (prompt.trim()) {
       setStatus('processing');
       setTimeLeft(5);
       const delay = 5000;
       
-      // Simulating random success/error
-      const isSuccess = Math.random() > 0.3; // 70% success rate
-      
-      setTimeout(() => {
-        setStatus(isSuccess ? 'done' : 'error');
-      }, delay);
+      try {
+        const logoData = {
+          prompt,
+          style: selectedStyle,
+          status: 'processing',
+          createdAt: new Date().toISOString()
+        };
+        
+        await saveLogo(logoData);
+        
+        setTimeout(() => {
+          setStatus('done');
+        }, delay);
+      } catch (error) {
+        console.error('Error saving to Firebase:', error);
+        setStatus('error');
+      }
     }
   };
 
@@ -81,7 +59,7 @@ export function LogoInput() {
     if (status === 'done') {
       router.push({
         pathname: '/(tabs)/output',
-        params: { prompt }
+        params: { prompt, style: selectedStyle }
       });
     } else if (status === 'error') {
       setStatus('idle');
@@ -100,63 +78,6 @@ export function LogoInput() {
     setPrompt(randomPrompt);
   };
 
-  const renderStatusComponent = () => {
-    if (status === 'idle') return null;
-
-    return (
-      <TouchableOpacity 
-        style={[
-          styles.processingContainer,
-          status === 'done' && styles.doneContainer,
-          status === 'error' && styles.errorContainer
-        ]}
-        onPress={handleStatusPress}
-      >
-        <View style={styles.processingContent}>
-          {status === 'processing' ? (
-            <View style={styles.loaderMainContainer}>
-                <CircularLoader />
-            </View>
-          ) : status === 'done' ? (
-            <View style={styles.successContainer}>
-              <Image 
-                source={require('../assets/images/generatedLogoExample.jpg')} 
-                style={styles.generatedLogo}
-              />
-            </View>
-          ) : (
-            <View style={styles.errorIconContainer}>
-              <Text style={styles.errorIcon}>⚠️</Text>
-            </View>
-          )}
-          <View style={styles.processingTextContainer}>
-            {status === 'processing' ? (
-              <>
-                <Text style={styles.processingTitle}>Creating Your Design...</Text>
-                <Text style={styles.processingSubtitle}>Ready in {timeLeft} seconds</Text>
-              </>
-            ) : status === 'done' ? (
-              <LinearGradient
-                colors={['#2938DC', '#943DFF']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientText}
-              >
-                <Text style={styles.processingTitle}>Your Design is Ready!</Text>
-                <Text style={styles.processingSubtitle}>Tap to see it</Text>
-              </LinearGradient>
-            ) : (
-              <>
-                <Text style={styles.errorTitle}>Oops, something went wrong!</Text>
-                <Text style={styles.errorSubtitle}>Click to try again</Text>
-              </>
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   const logoStyles: { id: LogoStyle; label: string; image: any }[] = [
     { id: 'no-style', label: 'No Style', image: require('../assets/images/no-style.png') },
     { id: 'monogram', label: 'Monogram', image: require('../assets/images/monogram.png') },
@@ -166,15 +87,17 @@ export function LogoInput() {
 
   return (
     <View style={styles.container}>
-      {renderStatusComponent()}
+      {status !== 'idle' && (
+        <Status 
+          status={status} 
+          timeLeft={timeLeft} 
+          onPress={handleStatusPress} 
+        />
+      )}
 
       <View style={styles.inputWrapper}>
-        <View style={styles.labelContainer}>
-          <Text style={styles.label}>Enter your prompt</Text>
-          <TouchableOpacity onPress={handleSurprise}>
-            <Text style={styles.surpriseText}>🎲 Surprise me</Text>
-          </TouchableOpacity>
-        </View>
+        <Header onSurprisePress={handleSurprise} />
+        
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -252,104 +175,8 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 24,
   },
-  processingContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
-    marginBottom: 8,
-    width: '100%',
-    height: 70,
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-  },
-  doneContainer: {
-    backgroundColor: 'transparent',
-  },
-  errorContainer: {
-    backgroundColor: 'rgba(255, 59, 48, 0.1)',
-  },
-  processingContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: '100%',
-    width: '100%',
-  },
-  loaderMainContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor:'#18181B',
-    overflow: 'hidden',
-    height: 70,
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-  },
-  loaderContainer: {
-    width: 70,
-    height: 70,
-    backgroundColor:'#18181B',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loaderCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    borderStyle: 'solid',
-    borderTopColor: 'transparent',
-  },
-  loaderInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'transparent',
-  },
-  checkmarkContainer: {
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  checkmark: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  processingTextContainer: {
-    flex: 1,
-  },
-  processingTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-    marginLeft:10
-  },
-  processingSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-    marginLeft:10
-  },
   inputWrapper: {
     gap: 12,
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    lineHeight: 25,
-  },
-  surpriseText: {
-    fontSize: 13,
-    color: '#FAFAFA',
-    lineHeight: 18,
-    fontWeight: '400',
   },
   inputContainer: {
     position: 'relative',
@@ -445,45 +272,5 @@ const styles = StyleSheet.create({
   },
   styleTextSelected: {
     color: '#FFFFFF',
-  },
-  successContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-    overflow: 'hidden',
-    height: 70,
-  },
-  generatedLogo: {
-    width: 70,
-    height: 70,
-    borderRadius: 0,
-  },
-  gradientText: {
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 16,
-    height:70,
-    textAlign:'center',
-    justifyContent:'center'
-  },
-  errorIconContainer: {
-    width: 70,
-    height: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorIcon: {
-    fontSize: 24,
-  },
-  errorTitle: {
-    color: '#FF3B30',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  errorSubtitle: {
-    color: 'rgba(255, 59, 48, 0.7)',
-    fontSize: 14,
   },
 }); 

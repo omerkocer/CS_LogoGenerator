@@ -66,3 +66,19 @@ dist/
 
 expo-env.d.ts
 # @end expo-cli
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# typescript
+*.tsbuildinfo
+
+# Firebase
+baas/firebaseConfig.js
