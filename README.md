@@ -97,20 +97,28 @@ npx expo start
 ## Screenshots
 
 ### Main Screen
-![Main Screen](./assets/screenshots/2025-02-19 14.20.12.png)
+<img src="./assets/screenshots/1Simulator%20Screenshot-iPhone%2016%20Pro-2025-05-11.png" width="300" alt="Main Screen" />
 *The main screen where users can enter their logo description*
 
 ### Style Selection
-![Style Selection](./assets/screenshots/2025-02-19 14.20.13.png)
+<img src="./assets/screenshots/2Simulator%20Screenshot-iPhone%2016%20Pro-2025-05-11%20at%2020.37.51.png" width="300" alt="Style Selection" />
 *Different logo styles available for selection*
 
 ### Processing Status
-![Processing Status](./assets/screenshots/2025-02-19 14.20.14.png)
+<img src="./assets/screenshots/3Simulator%20Screenshot%20-%20iPhone%2016%20Pro%20-%202025-05-11%20at%2020.38.03.png" width="300" alt="Processing Status" />
 *Real-time status updates during logo generation*
 
 ### Generated Logo
-![Generated Logo](./assets/screenshots/2025-02-19 14.20.15.png)
+<img src="./assets/screenshots/4Simulator%20Screenshot%20-%20iPhone%2016%20Pro%20-%202025-05-11%20at%2020.38.57.png" width="300" alt="Generated Logo" />
 *The final generated logo with copy functionality*
+
+### Final Result
+<img src="./assets/screenshots/5Simulator%20Screenshot%20-%20iPhone%2016%20Pro%20-%202025-05-11%20at%2020.39.03.png" width="300" alt="Final Result" />
+*The final result screen showing the generated logo*
+
+### Error State
+<img src="./assets/screenshots/6Simulator%20Screenshot%20-%20iPhone%2016%20Pro%20-%202025-05-11%20at%2020.57.15.png" width="300" alt="Error State" />
+*Error state display when logo generation fails*
 
 ## Case Study Details
 
