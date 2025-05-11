@@ -7,11 +7,10 @@ type StatusType = 'processing' | 'done' | 'error';
 
 interface StatusProps {
   status: StatusType;
-  timeLeft?: number;
   onPress: () => void;
 }
 
-export const Status = ({ status, timeLeft, onPress }: StatusProps) => {
+export const Status = ({ status, onPress }: StatusProps) => {
   const renderContent = () => {
     switch (status) {
       case 'processing':
@@ -22,7 +21,23 @@ export const Status = ({ status, timeLeft, onPress }: StatusProps) => {
             </View>
             <View style={styles.processingTextContainer}>
               <Text style={styles.processingTitle}>Creating Your Design...</Text>
-              <Text style={styles.processingSubtitle}>Ready in {timeLeft} seconds</Text>
+              <Text style={styles.processingSubtitle}>Ready in 2 minutes</Text>
+            </View>
+          </>
+        );
+      case 'error':
+        return (
+          <>
+            <View style={[styles.errorIconContainer, { backgroundColor: '#F37C7C' }]}>
+              <Image 
+                source={require('../../assets/icons/warn.png')} 
+                style={styles.warnIcon}
+                resizeMode="contain"
+              />
+            </View>
+            <View style={[styles.processingTextContainer, { backgroundColor: '#EF4444', height: 70, borderTopRightRadius: 16, borderBottomRightRadius: 16, justifyContent: 'center' }]}>
+              <Text style={styles.processingTitle}>Oops, something went wrong!</Text>
+              <Text style={styles.processingSubtitle}>Click to try again</Text>
             </View>
           </>
         );
@@ -45,22 +60,6 @@ export const Status = ({ status, timeLeft, onPress }: StatusProps) => {
                 <Text style={styles.processingTitle}>Your Design is Ready!</Text>
                 <Text style={styles.processingSubtitle}>Tap to see it</Text>
               </LinearGradient>
-            </View>
-          </>
-        );
-      case 'error':
-        return (
-          <>
-            <View style={[styles.errorIconContainer, { backgroundColor: '#F37C7C' }]}>
-              <Image 
-                source={require('../../assets/icons/warn.png')} 
-                style={styles.warnIcon}
-                resizeMode="contain"
-              />
-            </View>
-            <View style={[styles.processingTextContainer, { backgroundColor: '#EF4444', height: 70, borderTopRightRadius: 16, borderBottomRightRadius: 16, justifyContent: 'center' }]}>
-              <Text style={styles.processingTitle}>Oops, something went wrong!</Text>
-              <Text style={styles.processingSubtitle}>Click to try again</Text>
             </View>
           </>
         );

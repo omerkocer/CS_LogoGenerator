@@ -12,28 +12,15 @@ export function LogoInput() {
   const router = useRouter();
   const [prompt, setPrompt] = React.useState('');
   const [status, setStatus] = React.useState<'idle' | 'processing' | 'done' | 'error'>('idle');
-  const [timeLeft, setTimeLeft] = useState(5);
   const [selectedStyle, setSelectedStyle] = useState<LogoStyle>('no-style');
   const { saveLogo, loading: firebaseLoading, error: firebaseError } = useFirebase();
   const MAX_LENGTH = 500;
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (status === 'processing' && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [status, timeLeft]);
-
   const handleGenerate = async () => {
     if (prompt.trim()) {
       setStatus('processing');
-      setTimeLeft(5);
-      const delay = 5000;
+      const randomDelay = Math.floor(Math.random() * (60000 - 30000 + 1)) + 30000; // Random between 30-60 seconds
+      const delay = randomDelay;
       
       try {
         const logoData = {
@@ -90,23 +77,26 @@ export function LogoInput() {
       {status !== 'idle' && (
         <Status 
           status={status} 
-          timeLeft={timeLeft} 
           onPress={handleStatusPress} 
         />
       )}
 
       <View style={styles.inputWrapper}>
-        <Header onSurprisePress={handleSurprise} />
+        <Header onSurprisePress={handleSurprise} disabled={status === 'processing'} />
         
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              status === 'processing' && styles.inputDisabled
+            ]}
             placeholder="A blue lion logo reading 'HEXA' in bold letters"
             value={prompt}
             onChangeText={setPrompt}
             multiline
             maxLength={MAX_LENGTH}
             placeholderTextColor="rgba(255, 255, 255, 0.5)"
+            editable={status !== 'processing'}
           />
           <Text style={styles.charCount}>
             {prompt.length}/{MAX_LENGTH}
@@ -128,6 +118,7 @@ export function LogoInput() {
                     selectedStyle === style.id && styles.styleOptionSelected
                   ]}
                   onPress={() => setSelectedStyle(style.id)}
+                  disabled={status === 'processing'}
                 >
                   <Image source={style.image} style={styles.styleImage} />
                 </TouchableOpacity>
@@ -272,5 +263,8 @@ const styles = StyleSheet.create({
   },
   styleTextSelected: {
     color: '#FFFFFF',
+  },
+  inputDisabled: {
+    color: '#71717A',
   },
 }); 

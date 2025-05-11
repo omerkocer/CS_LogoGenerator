@@ -3,13 +3,14 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface HeaderProps {
   onSurprisePress: () => void;
+  disabled?: boolean;
 }
 
-export const Header = ({ onSurprisePress }: HeaderProps) => {
+export const Header = ({ onSurprisePress, disabled }: HeaderProps) => {
   return (
     <View style={styles.labelContainer}>
       <Text style={styles.label}>Enter your prompt</Text>
-      <TouchableOpacity onPress={onSurprisePress}>
+      <TouchableOpacity onPress={onSurprisePress} disabled={disabled}>
         <Text style={styles.surpriseText}>🎲 Surprise me</Text>
       </TouchableOpacity>
     </View>
